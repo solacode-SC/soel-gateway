@@ -1019,3 +1019,33 @@ h1 {
         padding: 1rem 1.2rem;
     }
 }
+
+/* ===== Portfolio Toast Extra ===== */
+.portfolio-toast {
+    border-color: rgba(255, 170, 0, 0.4);
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.6),
+        0 0 20px rgba(255, 170, 0, 0.15);
+}
+
+.portfolio-toast .thank-toast-text strong {
+    color: var(--comet-color);
+    text-shadow: 0 0 10px rgba(255, 170, 0, 0.4);
+}
+
+.toast-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+}
+
+.toast-hint a {
+    color: var(--accent-color);
+    text-decoration: underline;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.toast-hint a:hover {
+    color: #fff;
+}

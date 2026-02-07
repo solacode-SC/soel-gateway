@@ -376,6 +376,23 @@ function updateProgress() {
     }
 }
 
+// ===== Portfolio Not Ready Toast =====
+const ctaButton = document.getElementById('cta-btn');
+const portfolioToast = document.getElementById('portfolio-toast');
+const toastMailLink = document.getElementById('toast-mail-link');
+
+if (ctaButton) ctaButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    portfolioToast.classList.add('show');
+    setTimeout(() => portfolioToast.classList.remove('show'), 5000);
+});
+
+if (toastMailLink) toastMailLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    portfolioToast.classList.remove('show');
+    openModal(mailMeModal);
+});
+
 // ===== Masonry Layout =====
 function layoutMasonry() {
     const container = document.getElementById('card-grid');
