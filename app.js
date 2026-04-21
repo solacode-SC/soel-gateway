@@ -11,6 +11,66 @@ const snakeSize = 6;
 let snakeHead = { x: 0, y: 0, angle: 0 };
 const snakeSpeed = 15;
 const turnSpeed = 0.2;
+const frameMs = 1000 / 60;
+const maxDeltaScale = 2.5;
+
+function detectPerformanceProfile() {
+    const cores = navigator.hardwareConcurrency || 4;
+    const memory = navigator.deviceMemory || 4;
+    const saveData = navigator.connection && navigator.connection.saveData;
+    const smallScreen = window.innerWidth < 768;
+
+    if (saveData || cores <= 4 || memory <= 2) return 'low';
+    if (smallScreen || cores <= 8 || memory <= 4) return 'medium';
+    return 'high';
+}
+
+const qualityProfile = detectPerformanceProfile();
+const qualityByProfile = {
+    low: {
+        starsMobile: 40,
+        starsDesktop: 90,
+        cometCount: 4,
+        cometTrailLength: 4,
+        snakeGlow: false,
+        fireworkSpawnRate: 0.025,
+        fireworkExplosionParticles: 28,
+        explosionParticles: 8,
+        ceremonyCenterParticles: 160,
+        ceremonySideParticles: 50,
+        maxParticles: 280
+    },
+    medium: {
+        starsMobile: 55,
+        starsDesktop: 150,
+        cometCount: 6,
+        cometTrailLength: 5,
+        snakeGlow: true,
+        fireworkSpawnRate: 0.04,
+        fireworkExplosionParticles: 40,
+        explosionParticles: 10,
+        ceremonyCenterParticles: 240,
+        ceremonySideParticles: 75,
+        maxParticles: 500
+    },
+    high: {
+        starsMobile: 60,
+        starsDesktop: 200,
+        cometCount: 7,
+        cometTrailLength: 6,
+        snakeGlow: true,
+        fireworkSpawnRate: 0.05,
+        fireworkExplosionParticles: 50,
+        explosionParticles: 12,
+        ceremonyCenterParticles: 300,
+        ceremonySideParticles: 100,
+        maxParticles: 800
+    }
+};
+const quality = qualityByProfile[qualityProfile];
+
+let lastFrameTime = 0;
+let frameTick = 0;
 
 let comets = [];
 let stars = [];
@@ -31,7 +91,7 @@ function resize() {
 // ===== Stars (Parallax) =====
 function initStars() {
     stars = [];
-    const starCount = width < 768 ? 60 : 200;
+    const starCount = width < 768 ? quality.starsMobile : quality.starsDesktop;
     for (let i = 0; i < starCount; i++) {
         stars.push({
             x: Math.random() * width,
@@ -80,15 +140,15 @@ class Comet {
         this.trail = [];
     }
 
-    update() {
-        this.x += this.vx;
-        this.y += this.vy;
+    update(deltaScale = 1) {
+        this.x += this.vx * deltaScale;
+        this.y += this.vy * deltaScale;
 
         if (this.x < 0 || this.x > width) this.vx *= -1;
         if (this.y < 0 || this.y > height) this.vy *= -1;
 
         this.trail.push({ x: this.x, y: this.y });
-        if (this.trail.length > 6) this.trail.shift();
+        if (this.trail.length > quality.cometTrailLength) this.trail.shift();
     }
 
     draw() {
@@ -122,10 +182,10 @@ class Firework {
         this.exploded = false;
     }
 
-    update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        this.vy += 0.1;
+    update(deltaScale = 1) {
+        this.x += this.vx * deltaScale;
+        this.y += this.vy * deltaScale;
+        this.vy += 0.1 * deltaScale;
 
         if (this.vy >= 0 || this.y <= this.targetY) {
             this.explode();
@@ -142,7 +202,7 @@ class Firework {
     }
 
     explode() {
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i < quality.fireworkExplosionParticles; i++) {
             particles.push({
                 x: this.x,
                 y: this.y,
@@ -159,22 +219,35 @@ class Firework {
 // ===== Initialize =====
 resize();
 initSnake();
-for (let i = 0; i < 7; i++) comets.push(new Comet());
+for (let i = 0; i < quality.cometCount; i++) comets.push(new Comet());
 
-// ===== Snake AI =====
-function updateSnakeAI() {
+function getDeltaScale(timestamp) {
+    if (!lastFrameTime) {
+        lastFrameTime = timestamp;
+        return 1;
+    }
+
+    const deltaMs = timestamp - lastFrameTime;
+    lastFrameTime = timestamp;
+
+    if (!Number.isFinite(deltaMs) || deltaMs <= 0) return 1;
+    return Math.min(deltaMs / frameMs, maxDeltaScale);
+}
+
+function updateSnakeAIDelta(deltaScale) {
     let nearestDist = Infinity;
     let target = null;
 
-    comets.forEach(comet => {
+    for (let i = 0; i < comets.length; i++) {
+        const comet = comets[i];
         const dx = comet.x - snakeHead.x;
         const dy = comet.y - snakeHead.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < nearestDist) {
-            nearestDist = dist;
+        const distSq = dx * dx + dy * dy;
+        if (distSq < nearestDist) {
+            nearestDist = distSq;
             target = comet;
         }
-    });
+    }
 
     if (target) {
         const dx = target.x - snakeHead.x;
@@ -185,15 +258,16 @@ function updateSnakeAI() {
         while (diff > Math.PI) diff -= Math.PI * 2;
         while (diff < -Math.PI) diff += Math.PI * 2;
 
-        if (Math.abs(diff) < turnSpeed) {
+        const adjustedTurnSpeed = turnSpeed * deltaScale;
+        if (Math.abs(diff) < adjustedTurnSpeed) {
             snakeHead.angle = targetAngle;
         } else {
-            snakeHead.angle += Math.sign(diff) * turnSpeed;
+            snakeHead.angle += Math.sign(diff) * adjustedTurnSpeed;
         }
     }
 
-    snakeHead.x += Math.cos(snakeHead.angle) * snakeSpeed;
-    snakeHead.y += Math.sin(snakeHead.angle) * snakeSpeed;
+    snakeHead.x += Math.cos(snakeHead.angle) * snakeSpeed * deltaScale;
+    snakeHead.y += Math.sin(snakeHead.angle) * snakeSpeed * deltaScale;
 
     if (snakeHead.x < 0) snakeHead.x = width;
     if (snakeHead.x > width) snakeHead.x = 0;
@@ -205,36 +279,42 @@ function updateSnakeAI() {
 }
 
 // ===== Game Loop =====
-function animate() {
+function animate(timestamp) {
+    const deltaScale = getDeltaScale(timestamp);
+    frameTick++;
+
     ctx.clearRect(0, 0, width, height);
 
     // Stars
-    stars.forEach(star => {
-        star.y += star.speed;
+    for (let i = 0; i < stars.length; i++) {
+        const star = stars[i];
+        star.y += star.speed * deltaScale;
         if (star.y > height) star.y = 0;
         ctx.globalAlpha = star.alpha;
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         ctx.fill();
-    });
+    }
     ctx.globalAlpha = 1;
 
     // Snake
-    updateSnakeAI();
+    updateSnakeAIDelta(deltaScale);
 
-    // Draw Snake Glow
-    ctx.beginPath();
-    ctx.moveTo(snake[0].x, snake[0].y);
-    for (let i = 1; i < snake.length - 1; i++) {
-        let xc = (snake[i].x + snake[i + 1].x) / 2;
-        let yc = (snake[i].y + snake[i + 1].y) / 2;
-        ctx.quadraticCurveTo(snake[i].x, snake[i].y, xc, yc);
+    // Skip expensive glow stroke on low-end profile.
+    if (quality.snakeGlow && (qualityProfile !== 'medium' || frameTick % 2 === 0)) {
+        ctx.beginPath();
+        ctx.moveTo(snake[0].x, snake[0].y);
+        for (let i = 1; i < snake.length - 1; i++) {
+            let xc = (snake[i].x + snake[i + 1].x) / 2;
+            let yc = (snake[i].y + snake[i + 1].y) / 2;
+            ctx.quadraticCurveTo(snake[i].x, snake[i].y, xc, yc);
+        }
+        ctx.lineCap = 'round';
+        ctx.lineWidth = snakeSize + 4;
+        ctx.strokeStyle = 'rgba(0, 255, 204, 0.2)';
+        ctx.stroke();
     }
-    ctx.lineCap = 'round';
-    ctx.lineWidth = snakeSize + 4;
-    ctx.strokeStyle = 'rgba(0, 255, 204, 0.2)';
-    ctx.stroke();
 
     // Draw Snake Core
     ctx.beginPath();
@@ -249,29 +329,30 @@ function animate() {
     ctx.stroke();
 
     // Comets
-    comets.forEach(comet => {
-        comet.update();
+    for (let i = 0; i < comets.length; i++) {
+        const comet = comets[i];
+        comet.update(deltaScale);
         comet.draw();
 
         const dx = snakeHead.x - comet.x;
         const dy = snakeHead.y - comet.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const distSq = dx * dx + dy * dy;
 
-        if (dist < 60) {
+        if (distSq < 3600) {
             comet.reset();
             score++;
             updateProgress();
             createExplosion(snakeHead.x, snakeHead.y);
         }
-    });
+    }
 
     // Fireworks (if Know Me modal active)
-    if (activeModal === knowMeModal && Math.random() < 0.05) {
+    if (activeModal === knowMeModal && Math.random() < Math.min(0.25, quality.fireworkSpawnRate * deltaScale)) {
         fireworks.push(new Firework());
     }
 
     for (let i = fireworks.length - 1; i >= 0; i--) {
-        if (!fireworks[i].update()) {
+        if (!fireworks[i].update(deltaScale)) {
             fireworks.splice(i, 1);
         } else {
             fireworks[i].draw();
@@ -279,14 +360,14 @@ function animate() {
     }
 
     // Particles
-    updateParticles();
+    updateParticles(deltaScale);
 
     requestAnimationFrame(animate);
 }
 
 // ===== Particles =====
 function createExplosion(x, y) {
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < quality.explosionParticles; i++) {
         particles.push({
             x: x,
             y: y,
@@ -299,7 +380,7 @@ function createExplosion(x, y) {
 }
 
 function triggerCeremony() {
-    for (let i = 0; i < 300; i++) {
+    for (let i = 0; i < quality.ceremonyCenterParticles; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = Math.random() * 20 + 5;
         particles.push({
@@ -315,7 +396,7 @@ function triggerCeremony() {
     }
 
     setTimeout(() => {
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < quality.ceremonySideParticles; i++) {
             particles.push({
                 x: 0, y: height,
                 vx: Math.random() * 15 + 5, vy: -(Math.random() * 15 + 10),
@@ -332,19 +413,24 @@ function triggerCeremony() {
     }, 500);
 }
 
-function updateParticles() {
+function updateParticles(deltaScale = 1) {
+    if (particles.length > quality.maxParticles) {
+        particles.splice(0, particles.length - quality.maxParticles);
+    }
+
     for (let i = particles.length - 1; i >= 0; i--) {
         let p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
+        p.x += p.vx * deltaScale;
+        p.y += p.vy * deltaScale;
 
-        if (p.gravity) p.vy += p.gravity;
+        if (p.gravity) p.vy += p.gravity * deltaScale;
         if (p.drag) {
-            p.vx *= p.drag;
-            p.vy *= p.drag;
+            const adjustedDrag = Math.pow(p.drag, deltaScale);
+            p.vx *= adjustedDrag;
+            p.vy *= adjustedDrag;
         }
 
-        p.life -= 0.02;
+        p.life -= 0.02 * deltaScale;
 
         ctx.globalAlpha = Math.max(0, p.life);
         ctx.fillStyle = p.color;
