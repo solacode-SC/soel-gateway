@@ -464,18 +464,21 @@ function updateProgress() {
 
 // ===== Portfolio Not Ready Toast =====
 const ctaButton = document.getElementById('cta-btn');
+
+if (ctaButton) ctaButton.addEventListener('click', (e) => {
+    // If the href is set, we let it navigate naturally.
+    // If not ready, prevent default and show toast.
+});
+
+// Since the portfolio is now ready, we remove the prevention to allow standard navigation
+// (Optionally, we can keep the smooth scroll or effects if required, but typical anchor navigation will occur)
+
 const portfolioToast = document.getElementById('portfolio-toast');
 const toastMailLink = document.getElementById('toast-mail-link');
 
-if (ctaButton) ctaButton.addEventListener('click', (e) => {
-    e.preventDefault();
-    portfolioToast.classList.add('show');
-    setTimeout(() => portfolioToast.classList.remove('show'), 5000);
-});
-
 if (toastMailLink) toastMailLink.addEventListener('click', (e) => {
     e.preventDefault();
-    portfolioToast.classList.remove('show');
+    if (portfolioToast) portfolioToast.classList.remove('show');
     openModal(mailMeModal);
 });
 
