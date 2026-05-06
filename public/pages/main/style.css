@@ -895,7 +895,7 @@
             text-decoration: none;
             color: inherit;
             position: relative;
-            width: 560px;
+            width: 480px;
             aspect-ratio: auto;
             flex-shrink: 0;
             transition: transform 0.2s ease;
@@ -909,15 +909,11 @@
             transform: translateY(-5px);
         }
 
-        .links-card:hover {
-            transform: translateY(-5px);
-        }
-
         .links-card__main {
             background: var(--white);
             border: 3px solid var(--black);
             position: relative;
-            padding: 28px 24px 20px;
+            padding: 32px 24px 24px;
             box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
             transition: box-shadow 0.2s ease;
             flex: 1;
@@ -942,7 +938,7 @@
             border-bottom: none;
             padding: 10px 16px 8px;
             font-family: 'VT323', monospace;
-            font-size: 13px;
+            font-size: 14px;
             line-height: 1.3;
             color: var(--black);
             position: relative;
@@ -1002,7 +998,7 @@
             border-bottom: none;
             padding: 8px 14px;
             font-family: 'VT323', monospace;
-            font-size: 15px;
+            font-size: 16px;
             letter-spacing: 1px;
             color: var(--black);
         }
@@ -1010,15 +1006,15 @@
         .links-card__image {
             width: 100%;
             aspect-ratio: 16 / 9;
-            max-height: 70px;
+            max-height: 140px;
             border: 2px solid var(--black);
             background: var(--gray-light);
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'VT323', monospace;
-            font-size: clamp(28px, 8vw, 40px);
-            margin-bottom: 10px;
+            font-size: 60px;
+            margin-bottom: 16px;
             overflow: hidden;
             flex-shrink: 0;
         }
@@ -1031,10 +1027,10 @@
 
         .links-card__title {
             font-family: 'VT323', monospace;
-            font-size: clamp(18px, 5vw, 22px);
+            font-size: 26px;
             font-weight: 700;
             color: var(--black);
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             line-height: 1.1;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -1042,29 +1038,29 @@
 
         .links-card__link {
             font-family: 'Space Mono', monospace;
-            font-size: clamp(8px, 2.5vw, 10px);
+            font-size: 13px;
             color: var(--purple);
-            margin-bottom: 6px;
+            margin-bottom: 10px;
             display: block;
             word-break: break-all;
         }
 
         .links-card__desc {
             font-family: 'Space Mono', monospace;
-            font-size: clamp(8px, 2.5vw, 10px);
-            line-height: 1.4;
+            font-size: 14px;
+            line-height: 1.5;
             color: #222;
             flex-grow: 1;
             overflow: hidden;
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
         }
 
         .links-card__divider {
             border: none;
             border-top: 2px dashed var(--black);
-            margin: 10px 0;
+            margin: 14px 0;
         }
 
         .links-card__footer {
@@ -1204,68 +1200,70 @@
                 margin: 0 20px 40px;
             }
             .links-card {
-                width: 240px;
+                width: 320px;
                 aspect-ratio: auto;
-                min-height: 280px;
+                min-height: 320px;
             }
             .links-card__main {
-                padding: 20px 12px 10px;
+                padding: 24px 16px 16px;
             }
             .links-card__image {
                 margin-top: 15px;
-                max-height: 50px;
-                margin-bottom: 8px;
+                max-height: 100px;
+                margin-bottom: 12px;
+                font-size: 40px;
             }
             .links-card__title {
-                font-size: 18px;
+                font-size: 22px;
             }
             .links-card__link {
-                font-size: 9px;
-                margin-bottom: 4px;
+                font-size: 11px;
+                margin-bottom: 6px;
             }
             .links-card__desc {
-                font-size: 10px;
-                -webkit-line-clamp: 3;
+                font-size: 12px;
+                -webkit-line-clamp: 4;
             }
             .links-card__divider {
-                margin: 8px 0;
+                margin: 12px 0;
             }
             .links-card__footer {
-                gap: 4px;
+                gap: 8px;
             }
             .links-card__link-btn {
-                font-size: 12px;
-                padding: 4px 8px;
+                font-size: 14px;
+                padding: 6px 10px;
             }
         }
 
         @media (max-width: 400px) {
             .links-card {
-                width: 200px;
-                min-height: 260px;
+                width: 280px;
+                min-height: 300px;
             }
             .links-card__main {
-                padding: 20px 10px 8px;
+                padding: 20px 14px 12px;
             }
             .links-card__image {
                 margin-top: 10px;
-                max-height: 40px;
+                max-height: 80px;
+                font-size: 32px;
             }
             .links-card__title {
-                font-size: 16px;
+                font-size: 20px;
             }
             .links-card__tab-note {
-                padding: 6px 10px 4px;
-                font-size: 10px;
+                padding: 8px 12px 6px;
+                font-size: 12px;
             }
             .links-card__tabs {
                 top: -30px;
-                left: 10px;
-                right: 10px;
+                left: 14px;
+                right: 14px;
             }
             .links-card__tab-id {
-                padding: 4px 6px;
-                font-size: 10px;
+                padding: 6px 8px;
+                font-size: 12px;
             }
         }
     
