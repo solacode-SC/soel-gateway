@@ -346,8 +346,8 @@ function animate(timestamp) {
         }
     }
 
-    // Fireworks (if Know Me modal active)
-    if (activeModal === knowMeModal && Math.random() < Math.min(0.25, quality.fireworkSpawnRate * deltaScale)) {
+    // Fireworks
+    if (Math.random() < Math.min(0.25, quality.fireworkSpawnRate * deltaScale)) {
         fireworks.push(new Firework());
     }
 
@@ -474,13 +474,7 @@ if (ctaButton) ctaButton.addEventListener('click', (e) => {
 // (Optionally, we can keep the smooth scroll or effects if required, but typical anchor navigation will occur)
 
 const portfolioToast = document.getElementById('portfolio-toast');
-const toastMailLink = document.getElementById('toast-mail-link');
 
-if (toastMailLink) toastMailLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (portfolioToast) portfolioToast.classList.remove('show');
-    openModal(mailMeModal);
-});
 
 // ===== Masonry Layout =====
 function layoutMasonry() {
@@ -565,161 +559,141 @@ window.addEventListener('resize', () => {
     }, 100);
 });
 
-// ===== Modal Logic =====
-const knowMeBtn = document.getElementById('know-me-btn');
-const mailMeBtn = document.getElementById('mail-me-btn');
-const knowMeModal = document.getElementById('know-me-modal');
-const mailMeModal = document.getElementById('mail-me-modal');
-const closeKnowMeBtn = document.getElementById('close-modal');
-const closeMailMeBtn = document.getElementById('close-mail-modal');
-const mailForm = document.getElementById('mail-form');
-let activeModal = null;
 
-function openModal(modal) {
-    modal.classList.add('active');
-    activeModal = modal;
-}
+// ===== Card Panel Overlay =====
+const magicBtn = document.getElementById('magic-btn');
+const cardOverlay = document.getElementById('card-overlay');
+const cardExit = document.getElementById('card-exit');
 
-function closeModal(modal) {
-    modal.classList.remove('active');
-    activeModal = null;
-}
-
-if (knowMeBtn) knowMeBtn.addEventListener('click', (e) => { e.preventDefault(); openModal(knowMeModal); });
-if (mailMeBtn) mailMeBtn.addEventListener('click', (e) => { e.preventDefault(); openModal(mailMeModal); });
-if (closeKnowMeBtn) closeKnowMeBtn.addEventListener('click', () => closeModal(knowMeModal));
-if (closeMailMeBtn) closeMailMeBtn.addEventListener('click', () => closeModal(mailMeModal));
-
-[knowMeModal, mailMeModal].forEach(modal => {
-    if (modal) modal.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal(modal);
+// Open card panel
+if (magicBtn) {
+    magicBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        cardOverlay.classList.add('open');
     });
-});
+}
 
+// Close card panel
+function closeCardPanel() {
+    cardOverlay.classList.remove('open');
+    // Also close mail sub-panel
+    const mailPanel = document.getElementById('card-mail-panel');
+    if (mailPanel) mailPanel.classList.remove('open');
+}
+
+if (cardExit) {
+    cardExit.addEventListener('click', closeCardPanel);
+}
+
+// Close on overlay background click
+if (cardOverlay) {
+    cardOverlay.addEventListener('click', (e) => {
+        if (e.target === cardOverlay) closeCardPanel();
+    });
+}
+
+// Close on Escape key
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && activeModal) closeModal(activeModal);
+    if (e.key === 'Escape' && cardOverlay && cardOverlay.classList.contains('open')) {
+        closeCardPanel();
+    }
 });
 
-if (mailForm) mailForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const submitBtn = mailForm.querySelector('.send-btn');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Sending... ✉️';
-    submitBtn.disabled = true;
+// ===== Card Panel Internal Nav =====
+const cpSendMail = document.getElementById('card-send-mail');
+const cpKnowMe = document.getElementById('card-know-me');
+const cpMailPanel = document.getElementById('card-mail-panel');
+const cpMailClose = document.getElementById('card-mail-close');
+const cpIconMail = document.getElementById('card-icon-mail');
+const cpIconKnowme = document.getElementById('card-icon-knowme');
+const cpNavLinks = document.querySelectorAll('.card-panel__nav-links a');
 
-    const formData = new FormData(mailForm);
+function openCardMail() {
+    if (cpMailPanel) cpMailPanel.classList.add('open');
+    cpNavLinks.forEach(l => l.classList.remove('active'));
+    if (cpSendMail) cpSendMail.classList.add('active');
+}
 
-    fetch(mailForm.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'Accept': 'application/json'
-        }
-    })
-        .then(response => response.json())
+function closeCardMail() {
+    if (cpMailPanel) cpMailPanel.classList.remove('open');
+    cpNavLinks.forEach(l => l.classList.remove('active'));
+    if (cpKnowMe) cpKnowMe.classList.add('active');
+}
+
+if (cpSendMail) {
+    cpSendMail.addEventListener('click', (e) => {
+        e.preventDefault();
+        cpMailPanel.classList.contains('open') ? closeCardMail() : openCardMail();
+    });
+}
+
+if (cpKnowMe) {
+    cpKnowMe.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeCardMail();
+    });
+}
+
+if (cpIconMail) {
+    cpIconMail.addEventListener('click', () => {
+        cpMailPanel.classList.contains('open') ? closeCardMail() : openCardMail();
+    });
+}
+
+if (cpIconKnowme) {
+    cpIconKnowme.addEventListener('click', () => {
+        closeCardMail();
+    });
+}
+
+if (cpMailClose) {
+    cpMailClose.addEventListener('click', () => {
+        closeCardMail();
+    });
+}
+
+// ===== Card Panel Mail Form Submission =====
+const cpForm = document.getElementById('card-mail-form');
+const cpSubmit = document.getElementById('card-mail-submit');
+const cpStatus = document.getElementById('card-mail-status');
+
+if (cpForm) {
+    cpForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const originalText = cpSubmit.textContent;
+        cpSubmit.textContent = 'Sending...';
+        cpSubmit.disabled = true;
+        cpStatus.className = 'card-panel__form-status';
+        cpStatus.textContent = '';
+
+        fetch(cpForm.action, {
+            method: 'POST',
+            body: new FormData(cpForm),
+            headers: { 'Accept': 'application/json' }
+        })
+        .then(res => res.json())
         .then(data => {
             if (data.success) {
-                submitBtn.textContent = 'Sent! 🚀';
+                cpStatus.className = 'card-panel__form-status success';
+                cpStatus.textContent = '\u2713 MESSAGE SENT \u2014 I\'LL GET BACK TO YOU SOON';
+                cpForm.reset();
                 triggerCeremony();
-                mailForm.reset();
-
-                // Show thank-you toast
-                const toast = document.getElementById('thank-toast');
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 4000);
-
                 setTimeout(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
+                    cpSubmit.textContent = originalText;
+                    cpSubmit.disabled = false;
                 }, 3000);
             } else {
-                submitBtn.textContent = 'Error ❌';
-                submitBtn.disabled = false;
-                setTimeout(() => {
-                    submitBtn.textContent = originalText;
-                }, 3000);
+                throw new Error('Failed');
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
-            submitBtn.textContent = 'Error ❌';
-            submitBtn.disabled = false;
-            setTimeout(() => {
-                submitBtn.textContent = originalText;
-            }, 3000);
+        .catch(() => {
+            cpStatus.className = 'card-panel__form-status error';
+            cpStatus.textContent = '\u2715 SOMETHING WENT WRONG \u2014 TRY AGAIN';
+            cpSubmit.textContent = originalText;
+            cpSubmit.disabled = false;
         });
-});
-
-// ===== Chaos Ball =====
-class ChaosBall {
-    constructor(element, container) {
-        this.ball = element;
-        this.container = container;
-        this.progress = 0;
-        this.speed = 0.005;
-        this.targetOffset = { x: 0, y: 0 };
-        this.currentOffset = { x: 0, y: 0 };
-        this.isJumping = false;
-        this.animate = this.animate.bind(this);
-        requestAnimationFrame(this.animate);
-        setInterval(() => this.decideBehavior(), 800);
-    }
-
-    decideBehavior() {
-        const rand = Math.random();
-        if (rand < 0.35) {
-            if (this.isJumping) {
-                this.targetOffset = { x: 0, y: 0 };
-                this.isJumping = false;
-                this.ball.style.backgroundColor = 'var(--accent-color)';
-            } else {
-                const jumpDist = 60 + Math.random() * 120;
-                this.targetOffset = {
-                    x: (Math.random() - 0.5) * jumpDist,
-                    y: (Math.random() - 0.5) * jumpDist
-                };
-                this.isJumping = true;
-                this.ball.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 60%)`;
-            }
-        }
-        if (Math.random() < 0.5) {
-            const shapes = ['50%', '0%', '50% 50% 50% 0%', '30% 70% 70% 30% / 30% 30% 70% 70%'];
-            this.ball.style.borderRadius = shapes[Math.floor(Math.random() * shapes.length)];
-            const scale = 0.8 + Math.random() * 0.8;
-            const rotate = Math.random() * 360;
-            this.ball.style.transform = `scale(${scale}) rotate(${rotate}deg)`;
-        }
-        this.speed = (this.isJumping ? 0.002 : 0.005) + Math.random() * 0.01;
-    }
-
-    getBorderPosition(p) {
-        const w = this.container.offsetWidth;
-        const h = this.container.offsetHeight;
-        const total = 2 * (w + h);
-        const dist = p * total;
-        if (dist < w) return { x: dist, y: 0 };
-        if (dist < w + h) return { x: w, y: dist - w };
-        if (dist < 2 * w + h) return { x: w - (dist - (w + h)), y: h };
-        return { x: 0, y: h - (dist - (2 * w + h)) };
-    }
-
-    animate() {
-        this.currentOffset.x += (this.targetOffset.x - this.currentOffset.x) * 0.1;
-        this.currentOffset.y += (this.targetOffset.y - this.currentOffset.y) * 0.1;
-        this.progress += this.speed;
-        if (this.progress >= 1) this.progress = 0;
-        const pos = this.getBorderPosition(this.progress);
-        const finalX = pos.x + this.currentOffset.x - 7.5;
-        const finalY = pos.y + this.currentOffset.y - 7.5;
-        this.ball.style.left = `${finalX}px`;
-        this.ball.style.top = `${finalY}px`;
-        requestAnimationFrame(this.animate);
-    }
+    });
 }
-
-const ballEl = document.querySelector('#know-me-modal .modal-traveler');
-const containerEl = document.querySelector('#know-me-modal .modal-content');
-if (ballEl && containerEl) new ChaosBall(ballEl, containerEl);
 
 // ===== Start =====
 animate();

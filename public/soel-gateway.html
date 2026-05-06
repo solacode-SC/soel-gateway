@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solacode | Creative Developer</title>
+    <title>Solayman El Mouden | Creative Developer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -22,8 +22,7 @@
             <h1>Hi, I'm Solayman El Mouden</h1>
 
             <div class="header-actions">
-                <a href="#" class="btn btn-primary" id="know-me-btn">Know Me</a>
-                <a href="#" class="btn btn-secondary" id="mail-me-btn">Mail Me?</a>
+                <button class="btn btn-primary" id="magic-btn">It's Magic ✨</button>
             </div>
 
             <div class="social-links">
@@ -145,67 +144,188 @@
         </div>
     </div>
 
-    <!-- Know Me Modal -->
-    <div class="modal-overlay" id="know-me-modal">
-        <div class="modal-content">
-            <div class="modal-traveler"></div>
-            <button class="modal-close" id="close-modal">&times;</button>
-            <div class="modal-header">
-                <div class="modal-subtitle">student at 1337 school - UM6P</div>
+    <!-- Card Panel Overlay -->
+    <div class="card-overlay" id="card-overlay">
+        <div class="card-panel">
+            <!-- Zigzag top edge -->
+            <div class="card-panel__zigzag-top"></div>
+
+            <!-- Top tabs -->
+            <div class="card-panel__tabs">
+                <div class="card-panel__tab-brand">
+                    <div class="card-panel__tab-brand-text">KNOWME.EXE</div>
+                </div>
+                <div class="card-panel__tab-exit" id="card-exit">EXIT</div>
             </div>
-            <div class="modal-body">
-                <p>Motivated and detail-oriented Software Engineer with experience in low-level systems programming,
-                    fullstack development, and AI integration. Skilled at building efficient, scalable applications
-                    using C/C++, Python (Django), and React.</p>
-                <br>
-                <p>Passionate about problem-solving, clean architecture, and continuous learning through hands-on
-                    projects.</p>
+
+            <!-- Fold corner -->
+            <div class="card-panel__fold"></div>
+
+            <!-- Navigation -->
+            <nav class="card-panel__navbar">
+                <div class="card-panel__logo">Portfolio</div>
+                <ul class="card-panel__nav-links">
+                    <li><a href="#" class="active" id="card-know-me">Know me</a></li>
+                    <li><a href="#" id="card-send-mail">Send Mail</a></li>
+                </ul>
+                <div class="card-panel__nav-icons">
+                    <div class="card-panel__nav-icon" id="card-icon-mail">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="2" y="5" width="20" height="14" rx="2"/>
+                            <polyline points="2 5 12 13 22 5"/>
+                        </svg>
+                        <span class="card-panel__badge"></span>
+                    </div>
+                    <div class="card-panel__nav-icon" id="card-icon-knowme">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Mail Panel -->
+            <div class="card-panel__mail" id="card-mail-panel">
+                <div class="card-panel__mail-inner">
+                    <div class="card-panel__mail-header">
+                        <div class="card-panel__mail-title">Send <span>Mail</span> →</div>
+                        <button class="card-panel__mail-close" id="card-mail-close">✕</button>
+                    </div>
+                    <form class="card-panel__form" id="card-mail-form" action="https://api.web3forms.com/submit" method="POST">
+                        <input type="hidden" name="access_key" value="6ffd6979-2e43-45fa-96e8-d2354f1078e3">
+                        <input type="checkbox" name="botcheck" style="display:none;">
+                        <input type="hidden" name="subject" value="New Portfolio Contact Message">
+                        <input type="hidden" name="from_name" value="Solacode Portfolio">
+                        <div class="card-panel__form-group">
+                            <label class="card-panel__form-label">Full Name</label>
+                            <input type="text" name="name" class="card-panel__form-input" placeholder="John Doe" required>
+                        </div>
+                        <div class="card-panel__form-group">
+                            <label class="card-panel__form-label">Email</label>
+                            <input type="email" name="email" class="card-panel__form-input" placeholder="john@example.com" required>
+                        </div>
+                        <div class="card-panel__form-group card-panel__form-group--full">
+                            <label class="card-panel__form-label">Purpose</label>
+                            <input type="text" name="purpose" class="card-panel__form-input" placeholder="Project Inquiry / Collaboration" required>
+                        </div>
+                        <div class="card-panel__form-group card-panel__form-group--full">
+                            <label class="card-panel__form-label">Message</label>
+                            <textarea name="message" class="card-panel__form-textarea" placeholder="Write your message here..." required></textarea>
+                        </div>
+                        <button type="submit" class="card-panel__form-submit" id="card-mail-submit">Send Message →</button>
+                        <div class="card-panel__form-status" id="card-mail-status"></div>
+                    </form>
+                </div>
             </div>
+
+            <!-- Hero Section -->
+            <div class="card-panel__hero">
+                <div class="card-panel__hero-content">
+                    <div class="card-panel__hero-label">// 1337.EXE</div>
+                    <h2 class="card-panel__hero-title">
+                        Solayman
+                        <span>El Mouden</span>
+                    </h2>
+                    <p class="card-panel__hero-desc">
+                        I engineer systems, not just applications. From socket-level networking in C++ to fullstack platforms
+                        deployed with Docker and monitored in production,
+                        I focus on building software that is robust, scalable, and built to last
+                    </p>
+                    <a href="./pages/main/index.html" class="card-panel__btn"><span>See More</span><span>→</span></a>
+                </div>
+                <div class="card-panel__illustration">
+                    <svg class="card-panel__illustration-svg" viewBox="0 0 400 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="40" r="8" fill="#1a1a1a" opacity="0.12"/>
+                        <circle cx="340" cy="30" r="12" fill="#1a1a1a" opacity="0.12"/>
+                        <circle cx="370" cy="90" r="6" fill="#1a1a1a" opacity="0.12"/>
+                        <circle cx="30" cy="120" r="5" fill="#1a1a1a" opacity="0.12"/>
+                        <circle cx="360" cy="180" r="9" fill="#1a1a1a" opacity="0.12"/>
+                        <circle cx="60" cy="200" r="7" fill="#1a1a1a" opacity="0.12"/>
+                        <circle cx="320" cy="240" r="5" fill="#1a1a1a" opacity="0.12"/>
+                        <circle cx="40" cy="260" r="4" fill="#1a1a1a" opacity="0.12"/>
+                        <g transform="translate(100, 60)">
+                            <ellipse cx="110" cy="35" rx="32" ry="38" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+                            <path d="M78 25 C78 5, 95 -5, 110 -5 C130 -5, 145 10, 142 30 C140 20, 130 15, 120 18 C110 22, 100 20, 90 25 C85 28, 80 28, 78 25Z" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linejoin="round"/>
+                            <path d="M85 20 C90 10, 100 5, 110 8 C120 12, 125 18, 122 25" fill="none" stroke="#1a1a1a" stroke-width="1.5"/>
+                            <path d="M95 38 Q100 42, 105 38" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M115 38 Q120 42, 125 38" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M93 32 Q100 28, 107 32" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M113 32 Q120 28, 127 32" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M110 42 L108 50 L112 50" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M100 55 Q110 62, 120 55" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+                            <ellipse cx="76" cy="38" rx="5" ry="8" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+                            <ellipse cx="144" cy="38" rx="5" ry="8" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+                            <rect x="100" y="70" width="20" height="15" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+                            <path d="M70 85 C60 85, 50 95, 45 110 C40 125, 42 145, 48 160 C52 170, 58 175, 65 178 L70 180 L150 180 L155 178 C162 175, 168 170, 172 160 C178 145, 180 125, 175 110 C170 95, 160 85, 150 85 Z" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linejoin="round"/>
+                            <circle cx="65" cy="110" r="7" fill="#1a1a1a" opacity="0.85"/>
+                            <circle cx="155" cy="105" r="6" fill="#1a1a1a" opacity="0.85"/>
+                            <circle cx="80" cy="140" r="8" fill="#1a1a1a" opacity="0.85"/>
+                            <circle cx="145" cy="145" r="7" fill="#1a1a1a" opacity="0.85"/>
+                            <circle cx="110" cy="125" r="9" fill="#1a1a1a" opacity="0.85"/>
+                            <circle cx="60" cy="155" r="5" fill="#1a1a1a" opacity="0.85"/>
+                            <circle cx="160" cy="160" r="6" fill="#1a1a1a" opacity="0.85"/>
+                            <circle cx="95" cy="165" r="7" fill="#1a1a1a" opacity="0.85"/>
+                            <circle cx="130" cy="170" r="5" fill="#1a1a1a" opacity="0.85"/>
+                            <circle cx="110" cy="155" r="6" fill="#1a1a1a" opacity="0.85"/>
+                            <path d="M45 110 C35 115, 25 125, 20 140 C15 155, 18 170, 25 180 C30 188, 40 192, 50 190" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+                            <g transform="translate(15, 175)">
+                                <ellipse cx="15" cy="10" rx="12" ry="8" fill="none" stroke="#1a1a1a" stroke-width="2" transform="rotate(-10)"/>
+                                <path d="M5 8 L2 15" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M10 6 L8 16" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M15 5 L14 17" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M20 6 L20 16" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M25 8 L26 15" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+                            </g>
+                            <path d="M175 110 C190 115, 200 125, 205 140 C210 150, 208 160, 200 165" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+                            <g transform="translate(185, 155)">
+                                <ellipse cx="10" cy="8" rx="14" ry="10" fill="none" stroke="#1a1a1a" stroke-width="2" transform="rotate(15)"/>
+                                <path d="M8 5 L8 25" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+                                <path d="M12 6 L14 20" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M16 7 L20 18" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M20 8 L26 16" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M4 8 L-2 15" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+                                <ellipse cx="8" cy="24" rx="3" ry="2" fill="none" stroke="#1a1a1a" stroke-width="1.5"/>
+                            </g>
+                            <path d="M42 100 L48 118" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+                            <path d="M38 105 L44 123" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+                            <path d="M172 100 L178 118" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+                            <path d="M176 105 L182 123" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+                        </g>
+                        <line x1="20" y1="260" x2="380" y2="260" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+                        <g transform="translate(230, 215)">
+                            <ellipse cx="40" cy="45" rx="35" ry="8" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+                            <path d="M5 45 L5 35 C5 20, 15 10, 40 10 C65 10, 75 20, 75 35 L75 45" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linejoin="round"/>
+                            <path d="M5 35 C5 15, 20 0, 40 0 C60 0, 75 15, 75 35" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+                            <rect x="32" y="-8" width="16" height="10" rx="3" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+                            <line x1="40" y1="-8" x2="40" y2="-12" stroke="#1a1a1a" stroke-width="2.5"/>
+                            <path d="M15 25 C15 15, 25 8, 35 8" fill="none" stroke="#1a1a1a" stroke-width="1.5" opacity="0.4"/>
+                            <ellipse cx="40" cy="-20" rx="8" ry="3" fill="none" stroke="#1a1a1a" stroke-width="1.5" opacity="0.6"/>
+                            <ellipse cx="40" cy="-28" rx="14" ry="4" fill="none" stroke="#1a1a1a" stroke-width="1.5" opacity="0.4"/>
+                            <ellipse cx="40" cy="-36" rx="20" ry="5" fill="none" stroke="#1a1a1a" stroke-width="1.5" opacity="0.25"/>
+                            <circle cx="65" cy="30" r="2" fill="#1a1a1a" opacity="0.3"/>
+                            <circle cx="60" cy="20" r="1.5" fill="#1a1a1a" opacity="0.3"/>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Warning strip -->
+            <div class="card-panel__warning">
+                <span class="card-panel__warning-year">STUDENT AT 1337 SCHOOL - UM6P</span>
+                <div class="card-panel__warning-icon">★</div>
+                <div class="card-panel__warning-icon">!</div>
+                <div class="card-panel__warning-icon">↗</div>
+            </div>
+
+            <!-- Torn strip -->
+            <div class="card-panel__torn">- - - - - - - - - - - - - - - - -</div>
+
+            <!-- Zigzag bottom edge -->
+            <div class="card-panel__zigzag-bottom"></div>
         </div>
     </div>
 
-    <!-- Mail Me Modal -->
-    <div class="modal-overlay" id="mail-me-modal">
-        <div class="modal-content">
-            <button class="modal-close" id="close-mail-modal">&times;</button>
-            <div class="modal-header">
-                <div class="modal-subtitle">Let's Connect</div>
-                <h2 style="margin: 0; font-family: 'Poppins', sans-serif;">Send a Message</h2>
-            </div>
-            <div class="modal-body">
-                <form id="mail-form" action="https://api.web3forms.com/submit" method="POST">
-                    <!-- Web3Forms Access Key -->
-                    <input type="hidden" name="access_key" value="6ffd6979-2e43-45fa-96e8-d2354f1078e3">
-
-                    <!-- Honeypot Spam Protection -->
-                    <input type="checkbox" name="botcheck" class="hidden" style="display: none;">
-
-                    <input type="hidden" name="subject" value="New Portfolio Contact Message">
-                    <input type="hidden" name="from_name" value="Solacode Portfolio">
-
-                    <div class="form-group">
-                        <label class="form-label">Full Name</label>
-                        <input type="text" name="name" class="form-input" placeholder="John Doe" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" name="email" class="form-input" placeholder="john@example.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Purpose</label>
-                        <input type="text" name="purpose" class="form-input"
-                            placeholder="Project Inquiry / Collaboration" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Message</label>
-                        <textarea name="message" class="form-textarea" placeholder="Write your message here..."
-                            required></textarea>
-                    </div>
-                    <button type="submit" class="send-btn">Send Message 🚀</button>
-                </form>
-            </div>
-        </div>
-    </div>
 
     <!-- Portfolio Not Ready Toast -->
     <div class="thank-toast portfolio-toast" id="portfolio-toast">
