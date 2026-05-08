@@ -28,30 +28,30 @@ function detectPerformanceProfile() {
 const qualityProfile = detectPerformanceProfile();
 const qualityByProfile = {
     low: {
-        starsMobile: 40,
-        starsDesktop: 90,
+        starsMobile: 30,
+        starsDesktop: 60,
         cometCount: 4,
-        cometTrailLength: 4,
+        cometTrailLength: 3,
         snakeGlow: false,
-        fireworkSpawnRate: 0.025,
-        fireworkExplosionParticles: 28,
-        explosionParticles: 8,
-        ceremonyCenterParticles: 160,
-        ceremonySideParticles: 50,
-        maxParticles: 280
+        fireworkSpawnRate: 0.02,
+        fireworkExplosionParticles: 20,
+        explosionParticles: 6,
+        ceremonyCenterParticles: 120,
+        ceremonySideParticles: 35,
+        maxParticles: 180
     },
     medium: {
-        starsMobile: 55,
-        starsDesktop: 150,
+        starsMobile: 45,
+        starsDesktop: 120,
         cometCount: 6,
-        cometTrailLength: 5,
-        snakeGlow: true,
-        fireworkSpawnRate: 0.04,
-        fireworkExplosionParticles: 40,
-        explosionParticles: 10,
-        ceremonyCenterParticles: 240,
-        ceremonySideParticles: 75,
-        maxParticles: 500
+        cometTrailLength: 4,
+        snakeGlow: false,
+        fireworkSpawnRate: 0.03,
+        fireworkExplosionParticles: 30,
+        explosionParticles: 8,
+        ceremonyCenterParticles: 180,
+        ceremonySideParticles: 55,
+        maxParticles: 350
     },
     high: {
         starsMobile: 60,
@@ -82,12 +82,32 @@ let gameActive = true;
 let fireworks = [];
 let particles = [];
 
+// ===== Animation pause control =====
+let animationPaused = false;
+let animationId = null;
+
+// Pre-cached color palette to avoid HSL string creation per frame
+const cometColors = [];
+const particleColors = [];
+for (let i = 0; i < 20; i++) {
+    cometColors.push(`hsl(${Math.random() * 40 + 30}, 100%, 60%)`);
+    particleColors.push(`hsl(${Math.random() * 60 + 180}, 100%, 50%)`);
+}
+const fireworkHues = [];
+for (let i = 0; i < 36; i++) {
+    fireworkHues.push({
+        main: `hsl(${i * 10}, 100%, 50%)`,
+        explosion: `hsl(${i * 10}, 100%, 60%)`
+    });
+}
+
 // ===== Resize =====
 function resize() {
     width = canvas.width = window.innerWidth;
     height = canvas.height = window.innerHeight;
     initStars();
 }
+
 // ===== Stars (Parallax) =====
 function initStars() {
     stars = [];
@@ -119,6 +139,7 @@ function initSnake() {
 // ===== Comet Class =====
 class Comet {
     constructor() {
+        this.trail = [];
         this.reset();
     }
 
@@ -128,7 +149,7 @@ class Comet {
 
         const dx = this.x - snakeHead.x;
         const dy = this.y - snakeHead.y;
-        if (Math.sqrt(dx * dx + dy * dy) < 200 && attempt < 20) {
+        if (dx * dx + dy * dy < 40000 && attempt < 20) {
             this.reset(attempt + 1);
             return;
         }
@@ -136,33 +157,40 @@ class Comet {
         this.vx = (Math.random() - 0.5) * 7.5;
         this.vy = (Math.random() - 0.5) * 7.5;
         this.size = Math.random() * 4 + 3;
-        this.color = `hsl(${Math.random() * 40 + 30}, 100%, 60%)`;
-        this.trail = [];
+        this.color = cometColors[(Math.random() * cometColors.length) | 0];
+        this.trail.length = 0;
     }
 
-    update(deltaScale = 1) {
+    update(deltaScale) {
         this.x += this.vx * deltaScale;
         this.y += this.vy * deltaScale;
 
         if (this.x < 0 || this.x > width) this.vx *= -1;
         if (this.y < 0 || this.y > height) this.vy *= -1;
 
-        this.trail.push({ x: this.x, y: this.y });
-        if (this.trail.length > quality.cometTrailLength) this.trail.shift();
+        this.trail.push(this.x, this.y); // flat array: x,y pairs
+        const maxLen = quality.cometTrailLength * 2;
+        while (this.trail.length > maxLen) {
+            this.trail.shift();
+            this.trail.shift();
+        }
     }
 
     draw() {
-        ctx.beginPath();
-        for (let i = 0; i < this.trail.length; i++) {
-            const point = this.trail[i];
-            ctx.lineTo(point.x, point.y);
+        const t = this.trail;
+        if (t.length >= 4) {
+            ctx.beginPath();
+            ctx.moveTo(t[0], t[1]);
+            for (let i = 2; i < t.length; i += 2) {
+                ctx.lineTo(t[i], t[i + 1]);
+            }
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 1;
+            ctx.stroke();
         }
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = 1;
-        ctx.stroke();
 
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, this.size, 0, 6.2832);
         ctx.fillStyle = this.color;
         ctx.fill();
     }
@@ -175,14 +203,14 @@ class Firework {
         this.y = height;
         this.targetY = Math.random() * (height * 0.5);
         this.speed = Math.random() * 3 + 5;
-        this.angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.2;
+        this.angle = -1.5708 + (Math.random() - 0.5) * 0.2;
         this.vx = Math.cos(this.angle) * this.speed;
         this.vy = Math.sin(this.angle) * this.speed;
-        this.hue = Math.random() * 360;
+        this.hueIdx = (Math.random() * 36) | 0;
         this.exploded = false;
     }
 
-    update(deltaScale = 1) {
+    update(deltaScale) {
         this.x += this.vx * deltaScale;
         this.y += this.vy * deltaScale;
         this.vy += 0.1 * deltaScale;
@@ -196,12 +224,13 @@ class Firework {
 
     draw() {
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = `hsl(${this.hue}, 100%, 50%)`;
+        ctx.arc(this.x, this.y, 3, 0, 6.2832);
+        ctx.fillStyle = fireworkHues[this.hueIdx].main;
         ctx.fill();
     }
 
     explode() {
+        const color = fireworkHues[this.hueIdx].explosion;
         for (let i = 0; i < quality.fireworkExplosionParticles; i++) {
             particles.push({
                 x: this.x,
@@ -209,7 +238,7 @@ class Firework {
                 vx: (Math.random() - 0.5) * 10,
                 vy: (Math.random() - 0.5) * 10,
                 life: 1.5,
-                color: `hsl(${this.hue}, 100%, 60%)`,
+                color: color,
                 gravity: 0.1
             });
         }
@@ -255,8 +284,8 @@ function updateSnakeAIDelta(deltaScale) {
         const targetAngle = Math.atan2(dy, dx);
 
         let diff = targetAngle - snakeHead.angle;
-        while (diff > Math.PI) diff -= Math.PI * 2;
-        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= 6.2832;
+        while (diff < -Math.PI) diff += 6.2832;
 
         const adjustedTurnSpeed = turnSpeed * deltaScale;
         if (Math.abs(diff) < adjustedTurnSpeed) {
@@ -280,34 +309,37 @@ function updateSnakeAIDelta(deltaScale) {
 
 // ===== Game Loop =====
 function animate(timestamp) {
+    if (animationPaused) {
+        animationId = null;
+        return;
+    }
+
     const deltaScale = getDeltaScale(timestamp);
     frameTick++;
 
     ctx.clearRect(0, 0, width, height);
 
-    // Stars
+    // Stars — batch by alpha ranges to reduce state changes
+    ctx.fillStyle = '#fff';
     for (let i = 0; i < stars.length; i++) {
         const star = stars[i];
         star.y += star.speed * deltaScale;
         if (star.y > height) star.y = 0;
         ctx.globalAlpha = star.alpha;
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillRect(star.x, star.y, star.size, star.size);
     }
     ctx.globalAlpha = 1;
 
     // Snake
     updateSnakeAIDelta(deltaScale);
 
-    // Skip expensive glow stroke on low-end profile.
-    if (quality.snakeGlow && (qualityProfile !== 'medium' || frameTick % 2 === 0)) {
+    // Skip glow on low/medium
+    if (quality.snakeGlow && frameTick % 2 === 0) {
         ctx.beginPath();
         ctx.moveTo(snake[0].x, snake[0].y);
         for (let i = 1; i < snake.length - 1; i++) {
-            let xc = (snake[i].x + snake[i + 1].x) / 2;
-            let yc = (snake[i].y + snake[i + 1].y) / 2;
+            const xc = (snake[i].x + snake[i + 1].x) * 0.5;
+            const yc = (snake[i].y + snake[i + 1].y) * 0.5;
             ctx.quadraticCurveTo(snake[i].x, snake[i].y, xc, yc);
         }
         ctx.lineCap = 'round';
@@ -320,8 +352,8 @@ function animate(timestamp) {
     ctx.beginPath();
     ctx.moveTo(snake[0].x, snake[0].y);
     for (let i = 1; i < snake.length - 1; i++) {
-        let xc = (snake[i].x + snake[i + 1].x) / 2;
-        let yc = (snake[i].y + snake[i + 1].y) / 2;
+        const xc = (snake[i].x + snake[i + 1].x) * 0.5;
+        const yc = (snake[i].y + snake[i + 1].y) * 0.5;
         ctx.quadraticCurveTo(snake[i].x, snake[i].y, xc, yc);
     }
     ctx.lineWidth = snakeSize;
@@ -336,9 +368,8 @@ function animate(timestamp) {
 
         const dx = snakeHead.x - comet.x;
         const dy = snakeHead.y - comet.y;
-        const distSq = dx * dx + dy * dy;
 
-        if (distSq < 3600) {
+        if (dx * dx + dy * dy < 3600) {
             comet.reset();
             score++;
             updateProgress();
@@ -346,8 +377,8 @@ function animate(timestamp) {
         }
     }
 
-    // Fireworks
-    if (Math.random() < Math.min(0.25, quality.fireworkSpawnRate * deltaScale)) {
+    // Fireworks — throttle spawning
+    if (fireworks.length < 8 && Math.random() < Math.min(0.2, quality.fireworkSpawnRate * deltaScale)) {
         fireworks.push(new Firework());
     }
 
@@ -362,7 +393,7 @@ function animate(timestamp) {
     // Particles
     updateParticles(deltaScale);
 
-    requestAnimationFrame(animate);
+    animationId = requestAnimationFrame(animate);
 }
 
 // ===== Particles =====
@@ -374,14 +405,19 @@ function createExplosion(x, y) {
             vx: (Math.random() - 0.5) * 15,
             vy: (Math.random() - 0.5) * 15,
             life: 1,
-            color: `hsl(${Math.random() * 60 + 180}, 100%, 50%)`
+            color: particleColors[(Math.random() * particleColors.length) | 0]
         });
     }
 }
 
 function triggerCeremony() {
+    const ceremonyColors = [];
+    for (let i = 0; i < 12; i++) {
+        ceremonyColors.push(`hsl(${i * 30}, 100%, 50%)`);
+    }
+
     for (let i = 0; i < quality.ceremonyCenterParticles; i++) {
-        const angle = Math.random() * Math.PI * 2;
+        const angle = Math.random() * 6.2832;
         const speed = Math.random() * 20 + 5;
         particles.push({
             x: width / 2,
@@ -389,7 +425,7 @@ function triggerCeremony() {
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             life: 3,
-            color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+            color: ceremonyColors[(Math.random() * 12) | 0],
             gravity: 0.2,
             drag: 0.96
         });
@@ -397,29 +433,30 @@ function triggerCeremony() {
 
     setTimeout(() => {
         for (let i = 0; i < quality.ceremonySideParticles; i++) {
+            const color = ceremonyColors[(Math.random() * 12) | 0];
             particles.push({
                 x: 0, y: height,
                 vx: Math.random() * 15 + 5, vy: -(Math.random() * 15 + 10),
-                life: 3, color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                life: 3, color: color,
                 gravity: 0.2, drag: 0.96
             });
             particles.push({
                 x: width, y: height,
                 vx: -(Math.random() * 15 + 5), vy: -(Math.random() * 15 + 10),
-                life: 3, color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                life: 3, color: color,
                 gravity: 0.2, drag: 0.96
             });
         }
     }, 500);
 }
 
-function updateParticles(deltaScale = 1) {
+function updateParticles(deltaScale) {
     if (particles.length > quality.maxParticles) {
-        particles.splice(0, particles.length - quality.maxParticles);
+        particles.length = quality.maxParticles;
     }
 
     for (let i = particles.length - 1; i >= 0; i--) {
-        let p = particles[i];
+        const p = particles[i];
         p.x += p.vx * deltaScale;
         p.y += p.vy * deltaScale;
 
@@ -432,32 +469,37 @@ function updateParticles(deltaScale = 1) {
 
         p.life -= 0.02 * deltaScale;
 
-        ctx.globalAlpha = Math.max(0, p.life);
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size || 3, 0, Math.PI * 2);
-        ctx.fill();
+        if (p.life <= 0) {
+            // swap-remove for O(1)
+            particles[i] = particles[particles.length - 1];
+            particles.pop();
+            continue;
+        }
 
-        if (p.life <= 0) particles.splice(i, 1);
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        // Use fillRect instead of arc — much faster
+        const s = p.size || 3;
+        ctx.fillRect(p.x - s * 0.5, p.y - s * 0.5, s, s);
     }
     ctx.globalAlpha = 1;
 }
 
 // ===== UI Updates =====
-function updateProgress() {
-    const progressFill = document.getElementById('progress-fill');
-    const scoreText = document.getElementById('score-text');
-    const ctaBtn = document.getElementById('cta-btn');
+const progressFillEl = document.getElementById('progress-fill');
+const scoreTextEl = document.getElementById('score-text');
+const ctaBtnEl = document.getElementById('cta-btn');
 
+function updateProgress() {
     let percentage = (score / maxScore) * 100;
     if (percentage > 100) percentage = 100;
 
-    progressFill.style.width = `${percentage}%`;
-    scoreText.innerText = `${Math.min(score, maxScore)}/${maxScore} Comets`;
+    progressFillEl.style.width = `${percentage}%`;
+    scoreTextEl.innerText = `${Math.min(score, maxScore)}/${maxScore} Comets`;
 
-    if (score >= maxScore && !ctaBtn.classList.contains('active')) {
-        ctaBtn.classList.add('active');
-        ctaBtn.innerText = "Enter Portfolio 🚀";
+    if (score >= maxScore && !ctaBtnEl.classList.contains('active')) {
+        ctaBtnEl.classList.add('active');
+        ctaBtnEl.innerText = "Enter Portfolio 🚀";
         triggerCeremony();
     }
 }
@@ -556,7 +598,31 @@ window.addEventListener('resize', () => {
     resizeTimeout = setTimeout(() => {
         resize();
         layoutMasonry();
-    }, 100);
+    }, 150);
+});
+
+// ===== Pause/Resume animation =====
+function pauseAnimation() {
+    animationPaused = true;
+    lastFrameTime = 0; // reset so delta doesn't spike on resume
+}
+
+function resumeAnimation() {
+    if (!animationPaused) return;
+    animationPaused = false;
+    lastFrameTime = 0;
+    if (!animationId) {
+        animationId = requestAnimationFrame(animate);
+    }
+}
+
+// Pause when tab is hidden
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        pauseAnimation();
+    } else {
+        resumeAnimation();
+    }
 });
 
 
@@ -570,6 +636,7 @@ if (magicBtn) {
     magicBtn.addEventListener('click', (e) => {
         e.preventDefault();
         cardOverlay.classList.add('open');
+        pauseAnimation(); // pause canvas when overlay is open
     });
 }
 
@@ -579,6 +646,7 @@ function closeCardPanel() {
     // Also close mail sub-panel
     const mailPanel = document.getElementById('card-mail-panel');
     if (mailPanel) mailPanel.classList.remove('open');
+    resumeAnimation(); // resume canvas
 }
 
 if (cardExit) {
@@ -677,6 +745,7 @@ if (cpForm) {
                 cpStatus.className = 'card-panel__form-status success';
                 cpStatus.textContent = '\u2713 MESSAGE SENT \u2014 I\'LL GET BACK TO YOU SOON';
                 cpForm.reset();
+                resumeAnimation();
                 triggerCeremony();
                 setTimeout(() => {
                     cpSubmit.textContent = originalText;

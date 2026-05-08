@@ -67,6 +67,16 @@ body::after {
     z-index: 999;
 }
 
+/* Remove expensive pseudo-element overlays on mobile */
+@media (max-width: 768px) {
+    body::before {
+        background-size: 8px 8px;
+    }
+    body::after {
+        display: none;
+    }
+}
+
 /* ===== Canvas Layer ===== */
 #game-canvas {
     position: fixed;
@@ -293,7 +303,7 @@ h1 {
 }
 
 .filter-btn {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.15);
     border: 1px solid var(--glass-border);
     color: var(--text-muted);
     padding: 0.6rem 1.5rem;
@@ -302,7 +312,6 @@ h1 {
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    backdrop-filter: blur(5px);
 }
 
 @media (max-width: 768px) {
@@ -357,9 +366,7 @@ h1 {
 
 /* ===== Glass Cards ===== */
 .glass-card {
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.55);
     border: 1px solid rgba(0, 0, 0, 0.1);
     padding: 2rem;
     position: absolute;
@@ -368,15 +375,15 @@ h1 {
     transition:
         top 0.12s cubic-bezier(0.2, 0.8, 0.2, 1),
         left 0.12s cubic-bezier(0.2, 0.8, 0.2, 1),
-        opacity 0.1s ease,
-        filter 0.1s ease;
+        opacity 0.1s ease;
     overflow: visible;
     opacity: 0;
-    filter: blur(10px);
     border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
     box-shadow:
         0 10px 30px rgba(0, 0, 0, 0.05),
         inset 0 0 20px rgba(255, 255, 255, 0.5);
+    will-change: transform;
+    transform: translateZ(0);
 }
 
 .glass-card.hidden {
@@ -385,8 +392,7 @@ h1 {
 
 .glass-card.visible {
     opacity: 1;
-    filter: blur(0);
-    animation: dance 3s ease-in-out infinite alternate;
+    animation: dance 4s ease-in-out infinite alternate;
 }
 
 /* Strange Variations */
@@ -415,7 +421,7 @@ h1 {
         0 20px 40px rgba(0, 0, 0, 0.15),
         0 0 30px rgba(168, 85, 247, 0.2),
         inset 0 0 20px rgba(0, 0, 0, 0.05);
-    transform: translateY(-10px) scale(1.02);
+    transform: translateY(-10px) scale(1.02) translateZ(0);
     cursor: pointer;
 }
 
@@ -524,9 +530,8 @@ h1 {
     position: fixed;
     bottom: 2rem;
     left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
+    transform: translateX(-50%) translateZ(0);
+    background: rgba(0, 0, 0, 0.75);
     padding: 1rem 2rem;
     border-radius: 50px;
     border: 1px solid var(--glass-border);
@@ -753,8 +758,8 @@ h1 {
 }
 
 @keyframes dance {
-    0%   { transform: translateY(0); }
-    100% { transform: translateY(-15px); }
+    0%   { transform: translateY(0) translateZ(0); }
+    100% { transform: translateY(-12px) translateZ(0); }
 }
 
 @keyframes pulse {
@@ -769,6 +774,22 @@ h1 {
     20%, 40%, 60%, 80%      { transform: translateX(2px); }
 }
 
+/* Disable animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Disable continuous card dance on small mobile screens */
+@media (max-width: 480px) {
+    .glass-card.visible {
+        animation: none;
+    }
+}
+
 /* ===== Card Panel Overlay ===== */
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
@@ -776,8 +797,7 @@ h1 {
     position: fixed;
     inset: 0;
     z-index: 500;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -826,7 +846,6 @@ h1 {
     top: -16px;
     left: 3px;
     right: 3px;
-    filter: drop-shadow(0 -2px 0 var(--cp-black));
 }
 
 .card-panel__zigzag-bottom {
@@ -839,7 +858,6 @@ h1 {
     bottom: -16px;
     left: 3px;
     right: 3px;
-    filter: drop-shadow(0 2px 0 var(--cp-black));
 }
 
 /* Tabs */
